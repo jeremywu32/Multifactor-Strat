@@ -152,19 +152,62 @@ def download_years(eval_start='2015-01-01', eval_end='2025-12-31',
     print(f'{len(permnos)} distinct PERMNOs in evaluation universe')
 
     outputs = []
+    all_data = []
+
     for year in range(history_start.year, eval_end.year + 1):
-        year_start = max(history_start, pd.Timestamp(year=year, month=1, day=1))
-        year_end = min(eval_end, pd.Timestamp(year=year, month=12, day=31))
+        year_start = max(
+            history_start,
+            pd.Timestamp(year=year, month=1, day=1)
+        )
+        year_end = min(
+            eval_end,
+            pd.Timestamp(year=year, month=12, day=31)
+        )
+
         if year_start > year_end:
             continue
+
         df = load_daily_stock_data(
-            permnos, year_start, year_end, force_refresh=force_refresh
+            permnos,
+            year_start,
+            year_end,
+            force_refresh=force_refresh
         )
-        target = output_dir / f'sp500_raw_{year}.parquet'
-        df.to_parquet(target, index=False)
-        print(f'{year}: {len(df):,} rows, {df["permno"].nunique() if not df.empty else 0} securities')
-        outputs.append(target)
-    return outputs
+
+        # Add annual data to a list
+        all_data.append(df)
+
+        print(
+            f"{year}: {len(df):,} rows, "
+            f"{df['permno'].nunique()} securities"
+        )
+
+    # Concatenate once, after the loop
+    full_data = pd.concat(
+        all_data,
+        ignore_index=True
+    )
+
+    # Sort the full panel
+    full_data = full_data.sort_values(
+        ["permno", "dlycaldt"]
+    ).reset_index(drop=True)
+
+    # Export a single parquet file
+    target = output_dir / "sp500_full_data.pq"
+
+    full_data.to_parquet(
+        target,
+        engine="pyarrow",
+        compression="zstd",
+        index=False
+    )
+
+    print(f"Saved {len(full_data):,} rows")
+    print(f"Number of securities: {full_data['permno'].nunique()}")
+    print(f"Saved to: {target}")
+
+    return full_data
 
 
 if __name__ == '__main__':

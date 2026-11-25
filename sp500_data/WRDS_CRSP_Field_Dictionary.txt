@@ -1,0 +1,38 @@
+WRDS / CRSP CIZ (Version 2) — Daily Stock Data Field Dictionary
+Source table: crsp.dsf_v2
+Dataset: S&P 500 Historical Daily Stock Panel
+
+Field Name       | Description / Annotation
+-----------------+------------------------------------------------------------------------------------------------------------------------------------
+permno           | CRSP Permanent Security Identifier. Unique, persistent identifier for an individual security, including across ticker changes.
+permco           | CRSP Permanent Company Identifier. Unique, persistent identifier for the issuing company; one company may have multiple PERMNOs.
+ticker           | Trading ticker symbol associated with the security on the observation date; may change over time.
+siccd            | Standard Industrial Classification (SIC) code used to categorize the company's industry.
+dlycaldt         | Daily Calendar Date. Trading date associated with the daily security observation (YYYY-MM-DD).
+dlyopen          | Daily Open. First reported trading price after the regular market opens (USD per share).
+dlyhigh          | Daily High. Highest reported transaction price during the regular trading session (USD per share).
+dlylow           | Daily Low. Lowest reported transaction price during the regular trading session (USD per share).
+dlyclose         | Daily Close. Last transaction price during the regular trading session (USD per share).
+dlyprc           | Daily Price. Last regular-session transaction price; if unavailable, CRSP may use the average of closing bid and ask quotes (USD per share).
+dlyret           | Daily Total Return. Daily investment return including ordinary dividend income and applicable delisting effects; expressed as a decimal ratio.
+dlyretx          | Daily Price Return. Daily return excluding ordinary dividends, reflecting price appreciation and applicable non-ordinary distributions; decimal ratio.
+dlyvol           | Daily Share Volume. Raw number of shares traded during the day, not split-adjusted (shares).
+dlyprcvol        | Daily Price-Volume Product. DlyPrc multiplied by DlyVol; a proxy for traded dollar value, NOT actual transaction-level dollar volume (USD).
+shrout           | Shares Outstanding. Total shares outstanding, reported in THOUSANDS of shares; confirm the observation's timing and adjustment basis.
+dlycap           | Daily Market Capitalization. DlyPrc multiplied by shares outstanding; reported in THOUSANDS of US dollars.
+dlycumfacpr      | Daily Cumulative Price Adjustment Factor. Cumulative factor used to put prices before and after split/distribution events on a comparable basis.
+dlycumfacshr     | Daily Cumulative Shares/Volume Adjustment Factor. Cumulative factor used to put shares and volume before and after split-type events on a comparable basis.
+dlydelflg        | Daily Delisting Flag. 'Y' indicates a delisting return is present on the observation; 'N' indicates a non-delisting return is present.
+
+Research notes:
+- Use PERMNO, not ticker, as the security-level panel key.
+- Typical turnover calculation: dlyvol / (shrout * 1,000), assuming the two values refer to compatible share bases.
+- dlyprcvol is NOT true dollar trading volume and must not be treated as a VWAP-derived amount.
+- dlyprc and dlyclose can differ if CRSP uses a bid/ask midpoint in place of a closing trade.
+- Apply corporate-action adjustments consistently before calculating price-based factors across dates.
+- Missing observations and delisting flags should be handled explicitly rather than indiscriminately forward-filled.
+
+Reference:
+CRSP US Stock & Indexes Database Guide, Flat File Format 2.0 (CIZ), especially the StkShares,
+StkDlyCumulativeAdjFactor, StkDlySecurityPrimaryData and StkDlySecurityData field definitions.
+https://www.crsp.org/wp-content/uploads/guides/CRSP_US_Stock_%26_Indexes_Database_Guide_Flat_File_Format_2.0.pdf
